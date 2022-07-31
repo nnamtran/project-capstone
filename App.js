@@ -1,17 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { Text, View, StyleSheet, Button } from 'react-native';
+import { Text, View, StyleSheet, Button, StatusBar, Image } from 'react-native';
 import { BarCodeScanner } from 'expo-barcode-scanner';
 
 export default function App() {
   const [hasPermission, setHasPermission] = useState(null);
   const [scanned, setScanned] = useState(false);
-  const [item, setItem] = useState('Not yet scanned')
+  const [barcode, setBarcode] = useState('049000067316')
   const [title, setTitle] = useState('');
   const [image, setImage] = useState('...Loading');
 
   // Request API
   useEffect(() => {
-    const barcode = item;
     const options = {
       method: 'GET',
       headers: {
@@ -25,10 +24,11 @@ export default function App() {
       .then((responseJson) => {
         console.log(responseJson)
         setTitle(responseJson['product']['title'])
+        setBarcode(responseJson['product']['barcode_formats']['ean_13'])
         setImage(responseJson['product']['images'][0])
       })
       .catch(err => console.error(err));
-  }, []);
+  }, [barcode]);
 
 
 
@@ -48,7 +48,7 @@ export default function App() {
   // What happens when we scan the bar code
   const handleBarCodeScanned = ({ type, data }) => {
     setScanned(true);
-    setItem(data)
+    setBarcode(data)
     console.log('Type: ' + type + '\nData: ' + data)
   };
 
@@ -76,7 +76,7 @@ export default function App() {
           style={{ height: 400, width: 400 }} />
       </View>
       
-      <Text style={styles.maintext}>{item}</Text>
+      <Text style={styles.maintext}>{barcode}</Text>
 
       {scanned && <Button title={'Scan again?'} onPress={() => setScanned(false)} color='tomato' />}
 
@@ -86,7 +86,6 @@ export default function App() {
           <Text style={{margin:10, fontSize:16}}>Product:</Text>
           <Text style={{margin:10, fontSize:22}}>{title}</Text>
           <Image source={{uri: image, width: 100, height: 100,}}></Image>
-          <StatusBar style="auto" />
         </View>
       </View>
     </View>
